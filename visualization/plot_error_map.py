@@ -30,3 +30,17 @@
 #  ===============================================================================================================
 
 
+from visualization.save_image_only import save_image_only
+import numpy as np
+
+
+def plot_error_map(error_map, out_file, maskout=None, force_range=None):
+    error_map = error_map.copy()
+    if force_range is not None:
+        min_val, max_val = force_range
+        error_map = np.clip(error_map, min_val, max_val)
+        error_map[0, 0] = min_val
+        error_map[0, 1] = max_val
+
+    # save image and mask
+    save_image_only(error_map, out_file, maskout=maskout, cmap='bwr', save_cbar=True, plot=True)

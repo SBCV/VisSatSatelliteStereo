@@ -30,3 +30,27 @@
 #  ===============================================================================================================
 
 
+import numpy as np
+import imageio
+import os
+
+
+# hdr_img is 16-bit, while ldr_img is 8 bit
+def tone_map(hdr_img, ldr_img):
+    im = imageio.imread(hdr_img).astype(dtype=np.float64)
+
+    im = np.power(im, 1.0 / 2.2)  # gamma correction
+
+    # cut off the small values
+    below_thres = np.percentile(im.reshape((-1, 1)), 0.5)
+    im[im < below_thres] = below_thres
+    # cut off the big values
+    above_thres = np.percentile(im.reshape((-1, 1)), 99.5)
+    im[im > above_thres] = above_thres
+    im = 255 * (im - below_thres) / (above_thres - below_thres)
+
+    # remove the unneeded one
+    if os.path.exists(ldr_img):
+        os.remove(ldr_img)
+
+    imageio.imwrite(ldr_img, im.astype(dtype=np.uint8))

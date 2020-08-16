@@ -30,3 +30,64 @@
 #  ===============================================================================================================
 
 
+import utm
+import numpy as np
+import pyproj
+
+
+# pyproj implementation of the coordinate conversion
+def latlon_to_eastnorh(lat, lon):
+    # assume all the points are either on north or south hemisphere
+    assert(np.all(lat >= 0) or np.all(lat < 0))
+
+    if lat[0, 0] >= 0: # north hemisphere
+        south = False
+    else:
+        south = True
+
+    _, _, zone_number, _ = utm.from_latlon(lat[0, 0], lon[0, 0])
+
+    proj = pyproj.Proj(proj='utm', ellps='WGS84', zone=zone_number, south=south)
+    east, north = proj(lon, lat)
+    return east, north
+
+
+def eastnorth_to_latlon(east, north, zone_number, hemisphere):
+    if hemisphere == 'N':
+        south = False
+    else:
+        south = True
+
+    proj = pyproj.Proj(proj='utm', ellps='WGS84', zone=zone_number, south=south)
+    lon, lat = proj(east, north, inverse=True)
+    return lat, lon
+
+
+if __name__ == '__main__':
+    # a point on north hemisphere
+    lat = np.array([47.9941214]).reshape((1, 1))
+    lon = np.array([7.8509671]).reshape((1, 1))
+    print('lat, lon: {}'.format(np.hstack((lat, lon))))
+
+    east, north = latlon_to_eastnorh(lat, lon)
+    print('previous utm: {}'.format(np.hstack((east, north))))
+
+    east, north = latlon_to_eastnorh(lat, lon)
+    print('current utm: {}'.format(np.hstack((east, north))))
+
+    lat, lon = eastnorth_to_latlon(east, north, zone_number=32, hemisphere='N')
+    print('lat, lon: {}'.format(np.hstack((lat, lon))))
+
+    print('\n')
+    lat = np.array([-47.9941214]).reshape((1, 1))
+    lon = np.array([7.8509671]).reshape((1, 1))
+    print('lat, lon: {}'.format(np.hstack((lat, lon))))
+
+    east, north = latlon_to_eastnorh(lat, lon)
+    print('previous utm: {}'.format(np.hstack((east, north))))
+
+    east, north = latlon_to_eastnorh(lat, lon)
+    print('current utm: {}'.format(np.hstack((east, north))))
+
+    lat, lon = eastnorth_to_latlon(east, north, zone_number=32, hemisphere='S')
+    print('lat, lon: {}'.format(np.hstack((lat, lon))))
