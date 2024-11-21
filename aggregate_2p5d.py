@@ -63,6 +63,7 @@ def run_fuse(work_dir, max_processes=-1):
         logging.info('dsm {} empty ratio: {} '.format(item, np.sum(np.isnan(dsm)) / dsm.size))
 
     cnt = len(all_dsm)
+    assert cnt > 0
     all_dsm = np.concatenate(all_dsm, axis=2)
 
     # reject two measurements
