@@ -141,6 +141,8 @@ def convert_depth_maps(work_dir, out_dir, depth_type, max_processes=-1):
     pool = multiprocessing.Pool(min(max_processes, len(all_items)))
     for item in all_items:
         pool.apply_async(convert_depth_map_worker, args=(work_dir, out_dir, item, depth_type))
+        # For debugging
+        # pool.apply(convert_depth_map_worker, args=(work_dir, out_dir, item, depth_type))
 
     pool.close()
     pool.join()
