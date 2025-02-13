@@ -31,10 +31,31 @@
 
 
 import os
+import subprocess
 from lib.run_cmd import run_cmd
 from colmap_sfm_utils import create_init_files
 
 gpu_index = "-1"
+
+
+def check_option_available(option):
+    try:
+        # Run the COLMAP command with --help to get available options
+        result = subprocess.run(
+            ["colmap", "exhaustive_matcher", "--help"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+        # Check if the specified option is in the help output
+        if option in result.stdout:
+            return True
+        else:
+            return False
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
+        return False
 
 
 def run_sift_matching(img_dir, db_file, camera_model):
@@ -57,16 +78,25 @@ def run_sift_matching(img_dir, db_file, camera_model):
         --SiftExtraction.gpu_index {gpu_index}"
     run_cmd(cmd)
 
+    # Check for options
+    if check_option_available("SiftMatching.max_error"):
+        max_error_option_name = "SiftMatching"
+    elif check_option_available("TwoViewGeometry.max_error"):
+        max_error_option_name = "TwoViewGeometry"
+    else:
+        assert False, "Neither option is available."
+
     # feature matching
     cmd = f"colmap exhaustive_matcher \
         --database_path {db_file} \
         --SiftMatching.guided_matching 1 \
         --SiftMatching.num_threads 6 \
-        --SiftMatching.max_error 3 \
+        --{max_error_option_name}.max_error 3 \
         --SiftMatching.max_num_matches 30000 \
         --SiftMatching.gpu_index {gpu_index}"
 
     run_cmd(cmd)
+
 
 def run_point_triangulation(
     img_dir,
@@ -82,7 +112,7 @@ def run_point_triangulation(
 
     # create initial poses
     create_init_files(db_file, template_file, out_dir)
-    
+
     # triangulate points
     cmd = f"colmap point_triangulator \
         --Mapper.ba_refine_principal_point 1 \
