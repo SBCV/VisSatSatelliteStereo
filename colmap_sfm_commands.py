@@ -32,30 +32,26 @@
 
 import os
 import subprocess
+import shlex
 from lib.run_cmd import run_cmd
 from colmap_sfm_utils import create_init_files
 
 gpu_index = "-1"
 
 
-def check_option_available(option):
+def get_help_output(help_cmd):
     try:
-        # Run the COLMAP command with --help to get available options
         result = subprocess.run(
-            ["colmap", "exhaustive_matcher", "--help"],
+            shlex.split(help_cmd),
             capture_output=True,
             text=True,
             check=True,
         )
-
-        # Check if the specified option is in the help output
-        if option in result.stdout:
-            return True
-        else:
-            return False
+        options = result.stderr
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")
-        return False
+        assert False
+    return options
 
 
 def run_sift_matching(img_dir, db_file, camera_model):
@@ -78,13 +74,13 @@ def run_sift_matching(img_dir, db_file, camera_model):
         --SiftExtraction.gpu_index {gpu_index}"
     run_cmd(cmd)
 
-    # Check for options
-    if check_option_available("SiftMatching.max_error"):
+    help_output = get_help_output("colmap exhaustive_matcher --help")
+    if "SiftMatching.max_error" in help_output:
         max_error_option_name = "SiftMatching"
-    elif check_option_available("TwoViewGeometry.max_error"):
+    elif "TwoViewGeometry.max_error" in help_output:
         max_error_option_name = "TwoViewGeometry"
     else:
-        assert False, "Neither option is available."
+        assert False, f"No supported option in {help_output}."
 
     # feature matching
     cmd = f"colmap exhaustive_matcher \
