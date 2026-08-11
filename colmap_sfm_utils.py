@@ -107,10 +107,15 @@ def write_template_pinhole(pinhole_dict, template_file):
 def create_init_files(db_file, template_file, out_dir):
     # read database
     db = database.COLMAPDatabase.connect(db_file)
-    table_images = db.execute("SELECT * FROM images")
+    # Do NOT assume camera_id == image_id: that only holds when colmap's
+    # feature extraction registers images sequentially. Modern colmap
+    # (with FeatureExtraction.num_threads > 1) assigns database ids in
+    # worker-completion order, so the image and camera id sequences can
+    # differ - read the actual camera_id of every image instead.
+    table_images = db.execute("SELECT image_id, name, camera_id FROM images")
     img_name2id_dict = {}
-    for row in table_images:
-        img_name2id_dict[row[1]] = row[0]
+    for image_id, name, camera_id in table_images:
+        img_name2id_dict[name] = (image_id, camera_id)
 
     # load template
     with open(template_file) as fp:
@@ -118,11 +123,11 @@ def create_init_files(db_file, template_file, out_dir):
 
     cameras_txt_lines = []
     images_txt_lines = []
-    for img_name, img_id in img_name2id_dict.items():
-        camera_line = template[img_name][0].format(camera_id=img_id)
+    for img_name, (img_id, cam_id) in img_name2id_dict.items():
+        camera_line = template[img_name][0].format(camera_id=cam_id)
         cameras_txt_lines.append(camera_line)
 
-        image_line = template[img_name][1].format(image_id=img_id, camera_id=img_id)
+        image_line = template[img_name][1].format(image_id=img_id, camera_id=cam_id)
         images_txt_lines.append(image_line)
 
     with open(os.path.join(out_dir, 'cameras.txt'), 'w') as fp:
@@ -140,6 +145,7 @@ def create_init_files(db_file, template_file, out_dir):
     with open(os.path.join(out_dir, 'img_name2id.txt'), 'w') as fp:
         fp.write('# template_file: {}\n'.format(os.path.abspath(template_file)))
         fp.write('# db_file: {}\n'.format(os.path.abspath(db_file)))
-        fp.write('# format: img_name colmap_id\n')
+        fp.write('# format: img_name colmap_image_id colmap_camera_id\n')
         for img_name in sorted(img_name2id_dict.keys()):
-            fp.write('{} {}\n'.format(img_name, img_name2id_dict[img_name]))
+            img_id, cam_id = img_name2id_dict[img_name]
+            fp.write('{} {} {}\n'.format(img_name, img_id, cam_id))
