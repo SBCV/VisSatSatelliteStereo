@@ -145,6 +145,7 @@ def create_init_files(db_file, template_file, out_dir):
     with open(os.path.join(out_dir, 'img_name2id.txt'), 'w') as fp:
         fp.write('# template_file: {}\n'.format(os.path.abspath(template_file)))
         fp.write('# db_file: {}\n'.format(os.path.abspath(db_file)))
-        fp.write('# format: img_name colmap_id\n')
+        fp.write('# format: img_name colmap_image_id colmap_camera_id\n')
         for img_name in sorted(img_name2id_dict.keys()):
-            fp.write('{} {}\n'.format(img_name, img_name2id_dict[img_name]))
+            img_id, cam_id = img_name2id_dict[img_name]
+            fp.write('{} {} {}\n'.format(img_name, img_id, cam_id))
