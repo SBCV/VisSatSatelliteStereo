@@ -81,7 +81,7 @@ def vector_angle(vec1, vec2):
 
 class SparseInspector(object):
     def __init__(self, sparse_dir, db_path, out_dir, camera_model, ext='.txt'):
-        assert (camera_model == 'PINHOLE' or camera_model == 'PERSPECTIVE')
+        assert (camera_model == 'PINHOLE' or camera_model == 'SKEWED_PINHOLE')
         self.camera_model = camera_model
         self.out_dir = out_dir
         if not os.path.exists(self.out_dir):

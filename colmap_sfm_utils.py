@@ -37,7 +37,7 @@ from colmap.extract_sfm import extract_camera_dict
 
 
 def convert_colmap_sfm_to_template(sfm_dir, camera_model, template_file):
-    assert(camera_model == 'PINHOLE' or camera_model == 'PERSPECTIVE')
+    assert(camera_model == 'PINHOLE' or camera_model == 'SKEWED_PINHOLE')
 
     camera_dict = extract_camera_dict(sfm_dir)
 
@@ -49,7 +49,7 @@ def convert_colmap_sfm_to_template(sfm_dir, camera_model, template_file):
 
 def write_template_perspective(perspective_dict, template_file):
     template = {}
-    cameras_line_template = '{camera_id} PERSPECTIVE {width} {height} {fx} {fy} {cx} {cy} {s}\n'
+    cameras_line_template = '{camera_id} SKEWED_PINHOLE {width} {height} {fx} {fy} {cx} {cy} {s}\n'
     images_line_template = '{image_id} {qw} {qx} {qy} {qz} {tx} {ty} {tz} {camera_id} {image_name}\n\n'
 
     for img_name in perspective_dict:

@@ -62,15 +62,13 @@ CAMERA_MODELS = {
     CameraModel(model_id=8, model_name="SIMPLE_RADIAL_FISHEYE", num_params=4),
     CameraModel(model_id=9, model_name="RADIAL_FISHEYE", num_params=5),
     CameraModel(model_id=10, model_name="THIN_PRISM_FISHEYE", num_params=12),
-    # PERSPECTIVE (pinhole + skew) is added by the ColmapForVisSatPatches
-    # patch set, which can only APPEND it to colmap's positional model-id
-    # enum - the numeric id therefore drifts with the patched colmap commit
-    # (11 -> 12 -> 14 -> 18 across patch generations; 18 = the b0af55be
-    # generation this fork is paired with, guarded there by a static_assert
-    # - see the patches README, section "Camera model id"). Only .bin model
-    # reading consults this id; the pipeline reads/writes text models,
-    # which identify the model by NAME and are portable across generations.
-    CameraModel(model_id=18, model_name="PERSPECTIVE", num_params=5)
+    # SKEWED_PINHOLE (pinhole + skew, the camera model of the satellite
+    # pipeline) is an upstream colmap model since commit a938058e (PR
+    # #4815); earlier ColmapForVisSatPatches generations defined it as
+    # PERSPECTIVE with the same id and parameters. Only .bin model reading
+    # consults this id; the pipeline reads/writes text models, which
+    # identify the model by name.
+    CameraModel(model_id=18, model_name="SKEWED_PINHOLE", num_params=5)
 }
 CAMERA_MODEL_IDS = dict([(camera_model.model_id, camera_model) \
                          for camera_model in CAMERA_MODELS])

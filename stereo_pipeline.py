@@ -369,7 +369,7 @@ class StereoPipeline(object):
                 shutil.rmtree(inspect_dir)
 
             db_path = os.path.join(sfm_dir, 'database.db')
-            sfm_inspector = SparseInspector(dir, db_path, inspect_dir, camera_model='PERSPECTIVE')
+            sfm_inspector = SparseInspector(dir, db_path, inspect_dir, camera_model='SKEWED_PINHOLE')
             sfm_inspector.inspect_all()
 
         # stop local timer

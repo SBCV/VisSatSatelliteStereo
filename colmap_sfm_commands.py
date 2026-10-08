@@ -55,7 +55,7 @@ def get_help_output(help_cmd):
 
 
 def run_sift_matching(img_dir, db_file, camera_model):
-    assert camera_model == "PINHOLE" or camera_model == "PERSPECTIVE"
+    assert camera_model == "PINHOLE" or camera_model == "SKEWED_PINHOLE"
 
     if os.path.exists(db_file):  # otherwise colmap will skip sift matching
         os.remove(db_file)

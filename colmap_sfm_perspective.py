@@ -55,7 +55,7 @@ def run_sfm(work_dir, sfm_dir, init_camera_file, weight):
     img_dir = os.path.join(sfm_dir, 'images')
     db_file = os.path.join(sfm_dir, 'database.db')
 
-    colmap_sfm_commands.run_sift_matching(img_dir, db_file, camera_model='PERSPECTIVE')
+    colmap_sfm_commands.run_sift_matching(img_dir, db_file, camera_model='SKEWED_PINHOLE')
 
     with open(init_camera_file) as fp:
         init_camera_dict = json.load(fp)
