@@ -75,11 +75,14 @@ def convert_depth_map_worker(work_dir, out_dir, item, depth_type):
     depth_map = read_array(os.path.join(depth_dir, item))
     depth_map[depth_map <= 0.0] = np.nan    # actually it is -1e20
 
-    # create a meshgrid
+    # create a meshgrid of the pixel centres: since COLMAP's half-pixel fix
+    # (upstream c6ab4f89, #4822) the MVS computes the depth of pixel (col, row)
+    # on the ray through (col + 0.5, row + 0.5), the convention of COLMAP's
+    # cameras and of inv_proj_mats.txt
     height, width = depth_map.shape
     row, col = np.meshgrid(range(height), range(width), indexing='ij')
-    col = col.reshape((1, -1))
-    row = row.reshape((1, -1))
+    col = col.reshape((1, -1)) + 0.5
+    row = row.reshape((1, -1)) + 0.5
     depth = depth_map.reshape((1, -1))
 
     # project to scene space
