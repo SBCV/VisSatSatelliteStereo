@@ -67,6 +67,14 @@ def run_cmd(cmd, disable_log=False, input=None):
         logging.error('Subprocess failed')
         exit(-1)
     else:
+        # A command that started and then failed - an error exit, or a crash
+        # such as colmap aborting when the GPU runs out of memory - must stop
+        # the run: otherwise the next step reads whatever the failed one left
+        # behind, e.g. a partly matched database, and produces plausible but
+        # wrong output from it.
+        if process.returncode != 0:
+            logging.error('Subprocess failed with exit status {}, cmd: {}'.format(process.returncode, cmd))
+            raise subprocess.CalledProcessError(process.returncode, cmd)
         if not disable_log:
             # no exception was raised
             logging.info('Subprocess finished')
